@@ -19,6 +19,9 @@ public class MainActivity extends AppCompatActivity {
 
     private Gpio mEcho;
     private Gpio mTrigger;
+    private Gpio mRedPin;
+    private Gpio mGreenPin;
+    private Gpio mYellowPin;
 
     private Handler mTriggerHandler;
 
@@ -46,6 +49,18 @@ public class MainActivity extends AppCompatActivity {
         try {
             setEchoPin(service);
             setTriggerPin(service);
+
+            mRedPin = service.openGpio(BoardDefaults.getGPIOForRedLED());
+            mRedPin.setDirection(Gpio.DIRECTION_OUT_INITIALLY_LOW);
+            mRedPin.setValue(false);
+
+            mYellowPin = service.openGpio(BoardDefaults.getGPIOForYellowLED());
+            mYellowPin.setDirection(Gpio.DIRECTION_OUT_INITIALLY_LOW);
+            mYellowPin.setValue(false);
+
+            mGreenPin = service.openGpio(BoardDefaults.getGPIOForGreenLED());
+            mGreenPin.setDirection(Gpio.DIRECTION_OUT_INITIALLY_LOW);
+            mGreenPin.setValue(false);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -104,8 +119,9 @@ public class MainActivity extends AppCompatActivity {
                     // The pulse arrived on ECHO pin
                     broadcastTime = System.nanoTime();
                 } else {
-                    double distance =  TimeUnit.NANOSECONDS.toMicros(System.nanoTime() - broadcastTime) / 58.23; //cm
+                    double distance = TimeUnit.NANOSECONDS.toMicros(System.nanoTime() - broadcastTime) / 58.23; //cm
                     Log.i(TAG, "distance: " + distance + " cm");
+                    growLed(distance);
                 }
             } catch (IOException e) {
                 e.printStackTrace();
@@ -119,6 +135,38 @@ public class MainActivity extends AppCompatActivity {
         }
     };
 
+    private void growLed(double distance) {
+        try {
+            if (distance < 25) {
+                setRedLedOn();
+            } else if (distance > 25 && distance < 50) {
+                setYellowLedOn();
+            } else {
+                setGreenLedOn();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void setRedLedOn() throws IOException {
+        mRedPin.setValue(true);
+        mYellowPin.setValue(false);
+        mGreenPin.setValue(false);
+    }
+
+    private void setYellowLedOn() throws IOException {
+        mRedPin.setValue(false);
+        mYellowPin.setValue(true);
+        mGreenPin.setValue(false);
+    }
+
+    private void setGreenLedOn() throws IOException {
+        mRedPin.setValue(false);
+        mYellowPin.setValue(false);
+        mGreenPin.setValue(true);
+    }
+
     @Override
     protected void onDestroy() {
         super.onDestroy();
@@ -126,6 +174,9 @@ public class MainActivity extends AppCompatActivity {
             mEcho.unregisterGpioCallback(mEchoCallback);
             mEcho.close();
             mTrigger.close();
+            mRedPin.close();
+            mGreenPin.close();
+            mYellowPin.close();
         } catch (IOException e) {
             e.printStackTrace();
         }

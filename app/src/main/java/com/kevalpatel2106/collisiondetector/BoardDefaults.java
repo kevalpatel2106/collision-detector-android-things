@@ -94,7 +94,7 @@ public class BoardDefaults {
             case DEVICE_JOULE:
                 return "LED100";
             case DEVICE_RPI3:
-                return "BCM17";
+                return "BCM27";
             case DEVICE_PICO:
                 return "GPIO4_IO20";
             case DEVICE_VVDN:
@@ -117,7 +117,7 @@ public class BoardDefaults {
             case DEVICE_JOULE:
                 return "LED100";
             case DEVICE_RPI3:
-                return "BCM27";
+                return "BCM17";
             case DEVICE_PICO:
                 return "GPIO4_IO20";
             case DEVICE_VVDN:
