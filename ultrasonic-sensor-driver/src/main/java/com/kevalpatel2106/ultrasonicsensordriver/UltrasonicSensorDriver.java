@@ -12,20 +12,27 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * Created by Keval on 05-May-17.
+ * <p>
+ * This is the driver class for Ultrasonic distance measurement sensor - HC-SR04.
+ * This class uses different threads to send pulses to trigger pin and get the echo pulses. This threads
+ * are other than main thread. This is to increase the time accuracy for echo pulses by doing
+ * simultaneous tasks.
  */
 
 public final class UltrasonicSensorDriver implements AutoCloseable {
-    private static final int INTERVAL_BETWEEN_TRIGGERS = 500;
-    private final DistanceListener mListener;
-    private Gpio mEcho;
-    private Gpio mTrigger;
-    private Handler mTriggerHandler;
+    private static final int INTERVAL_BETWEEN_TRIGGERS = 500;   //Interval between two subsequent pulses
+
+    private final DistanceListener mListener;   //Listener to get call back when distance changes
+
+    private Gpio mEchoPin;      //GPIO for echo
+    private Gpio mTrigger;      //GPIO for trigger
+    private Handler mTriggerHandler;    //Handler for trigger.
 
     private Runnable mTriggerRunnable = new Runnable() {
         @Override
         public void run() {
             try {
-                readDistanceSync();
+                sendTriggerPulse();
                 mTriggerHandler.postDelayed(mTriggerRunnable, INTERVAL_BETWEEN_TRIGGERS);
             } catch (IOException | InterruptedException e) {
                 e.printStackTrace();
@@ -33,17 +40,22 @@ public final class UltrasonicSensorDriver implements AutoCloseable {
         }
     };
 
+    /**
+     * Callback for {@link #mEchoPin}. This callback will be called on both edges.
+     */
     private GpioCallback mEchoCallback = new GpioCallback() {
-        long broadcastTime;
+        private long mPulseStartTime;
 
         @Override
         public boolean onGpioEdge(Gpio gpio) {
             try {
                 if (gpio.getValue()) {
-                    // The pulse arrived on ECHO pin
-                    broadcastTime = System.nanoTime();
+                    mPulseStartTime = System.nanoTime();
                 } else {
-                    double distance = TimeUnit.NANOSECONDS.toMicros(System.nanoTime() - broadcastTime) / 58.23; //cm
+                    //Calculate distance.
+                    double distance = TimeUnit.NANOSECONDS.toMicros(System.nanoTime() - mPulseStartTime) / 58.23; //cm
+
+                    //Notify callback
                     if (mListener != null) mListener.onDistanceChange(distance);
                 }
             } catch (IOException e) {
@@ -58,6 +70,13 @@ public final class UltrasonicSensorDriver implements AutoCloseable {
         }
     };
 
+    /**
+     * Public constructor.
+     *
+     * @param triggerPin Name of the trigger pin
+     * @param echoPin    Name of the echo pin
+     * @param listener   {@link DistanceListener} to get callbacks when distance changes.
+     */
     public UltrasonicSensorDriver(String triggerPin, String echoPin, DistanceListener listener) {
         PeripheralManagerService service = new PeripheralManagerService();
 
@@ -68,59 +87,72 @@ public final class UltrasonicSensorDriver implements AutoCloseable {
             e.printStackTrace();
             throw new IllegalArgumentException("Invalid pin name.");
         }
+
+        //Set callback listener.
         mListener = listener;
         if (mListener == null)
             throw new IllegalArgumentException("DistanceListener cannot be null.");
 
         //Start sending pulses
+        //We are using different thread for sending pulses to increase time accuracy.
         HandlerThread triggerHandlerThread = new HandlerThread("TriggerHandlerThread");
         triggerHandlerThread.start();
         mTriggerHandler = new Handler(triggerHandlerThread.getLooper());
         mTriggerHandler.post(mTriggerRunnable);
     }
 
+    /**
+     * Set the trigger pin
+     *
+     * @param service    {@link PeripheralManagerService}.
+     * @param triggerPin Name of the trigger pin.
+     * @throws IOException If pin initialization fails.
+     */
     private void setTriggerPin(PeripheralManagerService service, String triggerPin) throws IOException {
-        // Create GPIO connection.
         mTrigger = service.openGpio(triggerPin);
-        // Configure as an output with default LOW (false) value.
         mTrigger.setDirection(Gpio.DIRECTION_OUT_INITIALLY_LOW);
-        mTrigger.setValue(false);
     }
 
+    /**
+     * Set the echo pin
+     *
+     * @param service {@link PeripheralManagerService}.
+     * @param echoPin Name of the echo pin.
+     * @throws IOException If pin initialization fails.
+     */
     private void setEchoPin(PeripheralManagerService service, String echoPin) throws IOException {
-        // Create GPIO connection.
-        mEcho = service.openGpio(echoPin);
-        // Configure as an input.
-        mEcho.setDirection(Gpio.DIRECTION_IN);
-        // Enable edge trigger events.
-        mEcho.setEdgeTriggerType(Gpio.EDGE_BOTH);
-        // Set Active type to HIGH, then the HIGH events will be considered as TRUE
-        mEcho.setActiveType(Gpio.ACTIVE_HIGH);
+        mEchoPin = service.openGpio(echoPin);
+        mEchoPin.setDirection(Gpio.DIRECTION_IN);
+        mEchoPin.setEdgeTriggerType(Gpio.EDGE_BOTH);
+        mEchoPin.setActiveType(Gpio.ACTIVE_HIGH);
 
         // Prepare handler for GPIO callback
         HandlerThread handlerThread = new HandlerThread("EchoCallbackHandlerThread");
         handlerThread.start();
-        mEcho.registerGpioCallback(mEchoCallback, new Handler(handlerThread.getLooper()));
+        mEchoPin.registerGpioCallback(mEchoCallback, new Handler(handlerThread.getLooper()));
     }
 
-    private void readDistanceSync() throws IOException, InterruptedException {
-        // Just to be sure, set the trigger first to false
+    /**
+     * Fire pulse for 10 micro seconds.
+     */
+    private void sendTriggerPulse() throws IOException, InterruptedException {
+        //Resetting trigger
         mTrigger.setValue(false);
         Thread.sleep(0, 2000);
 
-        // Hold the trigger pin high for at least 10 us
+        //Set trigger pin for 10 micro seconds.
         mTrigger.setValue(true);
-        Thread.sleep(0, 10000); //10 microsec
+        Thread.sleep(0, 10000);
 
-        // Reset the trigger pin
+        // Reset the trigger after 10 micro seconds.
         mTrigger.setValue(false);
     }
 
     @Override
     public void close() throws Exception {
         try {
-            mEcho.unregisterGpioCallback(mEchoCallback);
-            mEcho.close();
+            mEchoPin.unregisterGpioCallback(mEchoCallback);
+            mEchoPin.close();
             mTrigger.close();
         } catch (IOException e) {
             e.printStackTrace();
