@@ -33,118 +33,70 @@ public class BoardDefaults {
     private static String sBoardVariant = "";
 
     /**
-     * Return the GPIO pin that the LED is connected on.
-     * For example, on Intel Edison Arduino breakout, pin "IO13" is connected to an onboard LED
-     * that turns on when the GPIO pin is HIGH, and off when low.
+     * Return the GPIO pin for the trigger pin in HC-SR04 sensor.
      * <p>
-     * See: https://pinout.xyz/pinout/pin33_gpio13
+     * See: https://pinout.xyz/pinout/
      */
     public static String getGPIOForTrig() {
         switch (getBoardVariant()) {
-            case DEVICE_EDISON_ARDUINO:
-                return "IO13";
-            case DEVICE_EDISON:
-                return "GP45";
-            case DEVICE_JOULE:
-                return "LED100";
             case DEVICE_RPI3:
                 return "BCM6";
-            case DEVICE_PICO:
-                return "GPIO4_IO20";
-            case DEVICE_VVDN:
-                return "GPIO3_IO06";
             default:
                 throw new IllegalStateException("Unknown Build.DEVICE " + Build.DEVICE);
         }
     }
 
     /**
-     * Get the GPIO pin name for fan.
-     * Note: This pin config just work for rasberry pie
+     * Return the GPIO pin for the echo pin in HC-SR04 sensor.
+     * <p>
+     * See: https://pinout.xyz/pinout/
      */
     public static String getGPIOForEcho() {
         switch (getBoardVariant()) {
-            case DEVICE_EDISON_ARDUINO:
-                return "IO13";
-            case DEVICE_EDISON:
-                return "GP45";
-            case DEVICE_JOULE:
-                return "LED100";
             case DEVICE_RPI3:
                 return "BCM5";
-            case DEVICE_PICO:
-                return "GPIO4_IO20";
-            case DEVICE_VVDN:
-                return "GPIO3_IO06";
             default:
                 throw new IllegalStateException("Unknown Build.DEVICE " + Build.DEVICE);
         }
     }
 
     /**
-     * Get the GPIO pin name for light bulb.
-     * Note: This pin config just work for rasberry pie
+     * Return the GPIO pin for the Red LED.
+     * <p>
+     * See: https://pinout.xyz/pinout/
      */
     public static String getGPIOForRedLED() {
         switch (getBoardVariant()) {
-            case DEVICE_EDISON_ARDUINO:
-                return "IO13";
-            case DEVICE_EDISON:
-                return "GP45";
-            case DEVICE_JOULE:
-                return "LED100";
             case DEVICE_RPI3:
                 return "BCM27";
-            case DEVICE_PICO:
-                return "GPIO4_IO20";
-            case DEVICE_VVDN:
-                return "GPIO3_IO06";
             default:
                 throw new IllegalStateException("Unknown Build.DEVICE " + Build.DEVICE);
         }
     }
 
     /**
-     * Get the GPIO pin name for light bulb.
-     * Note: This pin config just work for rasberry pie
+     * Return the GPIO pin for the yellow LED.
+     * <p>
+     * See: https://pinout.xyz/pinout/
      */
     public static String getGPIOForYellowLED() {
         switch (getBoardVariant()) {
-            case DEVICE_EDISON_ARDUINO:
-                return "IO13";
-            case DEVICE_EDISON:
-                return "GP45";
-            case DEVICE_JOULE:
-                return "LED100";
             case DEVICE_RPI3:
                 return "BCM17";
-            case DEVICE_PICO:
-                return "GPIO4_IO20";
-            case DEVICE_VVDN:
-                return "GPIO3_IO06";
             default:
                 throw new IllegalStateException("Unknown Build.DEVICE " + Build.DEVICE);
         }
     }
 
     /**
-     * Get the GPIO pin name for light bulb.
-     * Note: This pin config just work for rasberry pie
+     * Return the GPIO pin for the green LED.
+     * <p>
+     * See: https://pinout.xyz/pinout/
      */
     public static String getGPIOForGreenLED() {
         switch (getBoardVariant()) {
-            case DEVICE_EDISON_ARDUINO:
-                return "IO13";
-            case DEVICE_EDISON:
-                return "GP45";
-            case DEVICE_JOULE:
-                return "LED100";
             case DEVICE_RPI3:
                 return "BCM22";
-            case DEVICE_PICO:
-                return "GPIO4_IO20";
-            case DEVICE_VVDN:
-                return "GPIO3_IO06";
             default:
                 throw new IllegalStateException("Unknown Build.DEVICE " + Build.DEVICE);
         }

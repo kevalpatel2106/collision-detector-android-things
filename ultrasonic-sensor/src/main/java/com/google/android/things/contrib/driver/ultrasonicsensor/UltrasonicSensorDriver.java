@@ -1,7 +1,8 @@
-package com.kevalpatel2106.ultrasonicsensordriver;
+package com.google.android.things.contrib.driver.ultrasonicsensor;
 
 import android.os.Handler;
 import android.os.HandlerThread;
+import android.support.annotation.NonNull;
 
 import com.google.android.things.pio.Gpio;
 import com.google.android.things.pio.GpioCallback;
@@ -11,12 +12,12 @@ import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
 /**
- * Created by Keval on 05-May-17.
- * <p>
  * This is the driver class for Ultrasonic distance measurement sensor - HC-SR04.
  * This class uses different threads to send pulses to trigger pin and get the echo pulses. This threads
  * are other than main thread. This is to increase the time accuracy for echo pulses by doing
  * simultaneous tasks.
+ *
+ * @author Keval {https://github.com/kevalpatel2106}
  */
 
 public final class UltrasonicSensorDriver implements AutoCloseable {
@@ -24,10 +25,13 @@ public final class UltrasonicSensorDriver implements AutoCloseable {
 
     private final DistanceListener mListener;   //Listener to get call back when distance changes
 
-    private Gpio mEchoPin;      //GPIO for echo
-    private Gpio mTrigger;      //GPIO for trigger
-    private Handler mTriggerHandler;    //Handler for trigger.
+    private Gpio mEchoPin;                  //GPIO for echo
+    private Gpio mTrigger;                  //GPIO for trigger
+    private Handler mTriggerHandler;        //Handler for trigger.
 
+    /**
+     * Runnable to send trigger pulses.
+     */
     private Runnable mTriggerRunnable = new Runnable() {
         @Override
         public void run() {
@@ -53,6 +57,7 @@ public final class UltrasonicSensorDriver implements AutoCloseable {
                     mPulseStartTime = System.nanoTime();
                 } else {
                     //Calculate distance.
+                    //From data-sheet (https://cdn.sparkfun.com/datasheets/Sensors/Proximity/HCSR04.pdf)
                     double distance = TimeUnit.NANOSECONDS.toMicros(System.nanoTime() - mPulseStartTime) / 58.23; //cm
 
                     //Notify callback
@@ -77,7 +82,7 @@ public final class UltrasonicSensorDriver implements AutoCloseable {
      * @param echoPin    Name of the echo pin
      * @param listener   {@link DistanceListener} to get callbacks when distance changes.
      */
-    public UltrasonicSensorDriver(String triggerPin, String echoPin, DistanceListener listener) {
+    public UltrasonicSensorDriver(@NonNull String triggerPin, @NonNull String echoPin, DistanceListener listener) {
         PeripheralManagerService service = new PeripheralManagerService();
 
         try {
@@ -133,7 +138,7 @@ public final class UltrasonicSensorDriver implements AutoCloseable {
     }
 
     /**
-     * Fire pulse for 10 micro seconds.
+     * Fire trigger pulse for 10 micro seconds.
      */
     private void sendTriggerPulse() throws IOException, InterruptedException {
         //Resetting trigger

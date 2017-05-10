@@ -1,1 +1,1 @@
-include ':app', ':ultrasonic-sensor-driver'
+include ':app', ':ultrasonic-sensor'
