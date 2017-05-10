@@ -1,4 +1,5 @@
 # Collison Detection using Android Things
+<a href="https://www.paypal.me/kevalpatel2106"> <img src="https://img.shields.io/badge/paypal-donate-yellow.svg" /></a>
 
 Get the distance of the object using Android Things using ultrasonic ranging sensor HC-SR04.
 
