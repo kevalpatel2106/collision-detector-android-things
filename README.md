@@ -3,6 +3,9 @@
 
 Get the distance of the object using Android Things using ultrasonic ranging sensor HC-SR04.
 
+## Circuit
+![circuit](/misc/collison-deector.png)
+
 ## Questions?🤔
 Hit me on twitter [![Twitter](https://img.shields.io/badge/Twitter-@kevalpatel2106-blue.svg?style=flat)](https://twitter.com/kevalpatel2106)
 
