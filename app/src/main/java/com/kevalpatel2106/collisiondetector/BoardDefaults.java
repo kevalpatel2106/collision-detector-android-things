@@ -40,7 +40,7 @@ public class BoardDefaults {
     public static String getGPIOForTrig() {
         switch (getBoardVariant()) {
             case DEVICE_RPI3:
-                return "BCM6";
+                return "BCM5";
             default:
                 throw new IllegalStateException("Unknown Build.DEVICE " + Build.DEVICE);
         }
@@ -54,7 +54,7 @@ public class BoardDefaults {
     public static String getGPIOForEcho() {
         switch (getBoardVariant()) {
             case DEVICE_RPI3:
-                return "BCM5";
+                return "BCM6";
             default:
                 throw new IllegalStateException("Unknown Build.DEVICE " + Build.DEVICE);
         }
